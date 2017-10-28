@@ -1,0 +1,146 @@
+
+{% extends 'base.html' %}
+
+{% block header %}
+<style>
+    .state{
+        fill: none;
+        stroke: #a9a9a9;
+        stroke-width: 1;
+    }
+    .state:hover{
+        fill-opacity:0.5;
+    }
+    #tooltip {   
+        position: absolute;           
+        text-align: center;
+        padding: 25px;             
+        margin: 10px;
+        font: 12px sans-serif;  
+    color: white;
+        background: teal;   
+        border: 2px;      
+        border-radius: 2px;           
+        pointer-events: none;         
+    }
+    #tooltip h4{
+        margin:0;
+        font-size:12px;
+    color:white;
+    }
+    #tooltip{
+        background:rgba(0,0,0,0.9);
+        border:1px solid white;
+        border-radius:5px;
+        font-size:12px;
+        width:auto;
+        padding:4px;
+        color:white;
+        opacity:0;
+    }
+    #tooltip table{
+        table-layout:fixed;
+    }
+    #tooltip tr td{
+        padding:0;
+        margin:0;
+    color:white;
+    font-size: 12px;
+    }
+    #tooltip tr td:nth-child(1){
+        width:120px;
+    color: white;
+    }
+    #tooltip tr td:nth-child(2){
+        text-align:center
+      color: white;
+    }
+</style>
+{% endblock header %}
+
+{% block body %}
+  <section class="header">
+    <h2 class="title">Loan Application Decision Predictor</h2>
+  </section>
+  <hr />
+
+  <div class="contenst">
+    <h4>
+      {% if prediction %}
+        You should be {{ prediction }}.
+        {% if prediction == 'Accepted' %}
+          Your loan grade should be {{ prediction_grade }}.
+        {% endif %}
+      {% else %}
+        Please fill out the form below.
+      {% endif %}
+    </h4>
+    <form method="POST">
+      {{ form.hidden_tag() }}
+      <div class="row">
+        <div class="three columns">
+          {{ form.loan_amnt.label }} {{ form.loan_amnt() }}
+        </div>
+        <div class="three columns">
+          {{ form.title.label }} {{ form.title() }}
+        </div>
+        <div class="three columns">
+          {{ form.dti.label }} {{ form.dti() }}
+        </div>
+        <div class="three columns">
+          {{ form.addr_state.label }} {{ form.addr_state }}
+        </div>
+        <div class="three columns">
+          {{ form.emp_length.label }} {{ form.emp_length }}
+        </div>
+        <div class="three columns">
+          {{ form.term.label }} {{ form.term() }}
+        </div>
+        <div class="three columns">
+          {{ form.installment.label }} {{ form.installment() }}
+        </div>
+        <div class="three columns">
+          {{ form.bc_util.label }} {{ form.bc_util() }}
+        </div>
+        <div class="three columns">
+          {{ form.num_tl_op_past_12m.label }} {{ form.num_tl_op_past_12m() }}
+        </div>
+      </div>
+      <div class="row">
+        <button type="submit" class="button-primary">Submit</button>
+      </div>
+    </form>
+  </div>
+  <div id="tooltip"></div><!-- div to hold tooltip. -->
+<svg width="960" height="600" id="statesvg"></svg> <!-- svg to hold the map. -->
+
+{% endblock body %}
+
+{% block js %}
+<!--<script type="text/javascript">
+  // your JS Code
+  // Your D3 code could be here -->
+<script type="text/javascript">
+    function tooltipHtml(n, d){ /* function to create html content string in tooltip div. */
+        return "<h4>"+n+"</h4><table>"+
+            "<tr><td>Percentage Approved</td><td>"+(d3.round(d.percent_accept*100,2))+"</td></tr>"+
+            "<tr><td>Average Loan Size</td><td>"+(d.average_loan)+"</td></tr>"+
+            "<tr><td>Average Debt to Income Ratio</td><td>"+(d.average_dti)+"</td></tr>"+
+            "</table>";
+    }
+  
+  
+    var sampleData ={"AK":{"average_dti":19.0,"average_loan":17150.0,"normalized_percent":0.462013182,"percent_accept":0.127},"AL":{"average_dti":20.9,"average_loan":15072.0,"normalized_percent":0.1013058626,"percent_accept":0.094},"AR":{"average_dti":20.8,"average_loan":14555.0,"normalized_percent":0.1362254821,"percent_accept":0.097},"AZ":{"average_dti":18.6,"average_loan":14673.0,"normalized_percent":0.619700939,"percent_accept":0.141},"CA":{"average_dti":16.9,"average_loan":15351.0,"normalized_percent":0.6175329706,"percent_accept":0.141},"CO":{"average_dti":18.4,"average_loan":15378.0,"normalized_percent":0.7741883951,"percent_accept":0.155},"CT":{"average_dti":17.2,"average_loan":15710.0,"normalized_percent":0.7542770809,"percent_accept":0.154},"DC":{"average_dti":15.7,"average_loan":15927.0,"normalized_percent":0.708490847,"percent_accept":0.149},"DE":{"average_dti":18.7,"average_loan":15019.0,"normalized_percent":0.3315881288,"percent_accept":0.115},"FL":{"average_dti":19.0,"average_loan":14445.0,"normalized_percent":0.3547090191,"percent_accept":0.117},"GA":{"average_dti":19.3,"average_loan":15413.0,"normalized_percent":0.3548911206,"percent_accept":0.117},"HI":{"average_dti":19.8,"average_loan":15758.0,"normalized_percent":0.2789824262,"percent_accept":0.11},"IA":{"average_dti":18.2,"average_loan":15680.0,"normalized_percent":0.6193521963,"percent_accept":0.141},"ID":{"average_dti":20.0,"average_loan":14639.0,"normalized_percent":0.4078140502,"percent_accept":0.122},"IL":{"average_dti":20.0,"average_loan":15132.0,"normalized_percent":0.6192567839,"percent_accept":0.141},"IN":{"average_dti":19.5,"average_loan":13432.0,"normalized_percent":0.407,"percent_accept":0.122},"KS":{"average_dti":20.0,"average_loan":14566.0,"normalized_percent":0.5494138478,"percent_accept":0.135},"KY":{"average_dti":20.1,"average_loan":15298.0,"normalized_percent":0.1810994039,"percent_accept":0.101},"LS":{"average_dti":16.9,"average_loan":15955.0,"normalized_percent":0.1796890616,"percent_accept":0.101},"MA":{"average_dti":18.0,"average_loan":15949.0,"normalized_percent":0.6536403724,"percent_accept":0.144},"MD":{"average_dti":20.3,"average_loan":15533.0,"normalized_percent":0.6503784402,"percent_accept":0.144},"ME":{"average_dti":19.1,"average_loan":14521.0,"normalized_percent":0.5380650459,"percent_accept":0.134},"MI":{"average_dti":18.9,"average_loan":14881.0,"normalized_percent":0.4846283217,"percent_accept":0.129},"MN":{"average_dti":19.9,"average_loan":14948.0,"normalized_percent":1.0,"percent_accept":0.176},"MO":{"average_dti":20.7,"average_loan":14820.0,"normalized_percent":0.3682661065,"percent_accept":0.118},"MS":{"average_dti":19.7,"average_loan":14172.0,"normalized_percent":0.0,"percent_accept":0.084},"MT":{"average_dti":19.2,"average_loan":15156.0,"normalized_percent":0.5725300814,"percent_accept":0.137},"NC":{"average_dti":21.0,"average_loan":15548.0,"normalized_percent":0.3778682057,"percent_accept":0.119},"ND":{"average_dti":20.3,"average_loan":14656.0,"normalized_percent":0.6419036286,"percent_accept":0.143},"NE":{"average_dti":19.1,"average_loan":15132.0,"normalized_percent":0.4949655716,"percent_accept":0.13},"NH":{"average_dti":17.0,"average_loan":16091.0,"normalized_percent":0.7254444163,"percent_accept":0.151},"NJ":{"average_dti":21.0,"average_loan":15144.0,"normalized_percent":0.6978780531,"percent_accept":0.148},"NM":{"average_dti":18.8,"average_loan":14196.0,"normalized_percent":0.4003856722,"percent_accept":0.121},"NV":{"average_dti":16.7,"average_loan":15037.0,"normalized_percent":0.6499775412,"percent_accept":0.144},"NY":{"average_dti":20.2,"average_loan":14668.0,"normalized_percent":0.5325745657,"percent_accept":0.133},"OH":{"average_dti":20.0,"average_loan":15339.0,"normalized_percent":0.4243189154,"percent_accept":0.123},"OK":{"average_dti":17.9,"average_loan":14135.0,"normalized_percent":0.2744390279,"percent_accept":0.109},"OR":{"average_dti":19.7,"average_loan":15129.0,"normalized_percent":0.6746458981,"percent_accept":0.146},"PA":{"average_dti":17.4,"average_loan":14756.0,"normalized_percent":0.4462291382,"percent_accept":0.125},"RI":{"average_dti":19.9,"average_loan":15185.0,"normalized_percent":0.5978639084,"percent_accept":0.139},"SC":{"average_dti":21.7,"average_loan":14150.0,"normalized_percent":0.1436482561,"percent_accept":0.097},"SD":{"average_dti":20.2,"average_loan":14944.0,"normalized_percent":0.3961508005,"percent_accept":0.121},"TN":{"average_dti":19.6,"average_loan":16072.0,"normalized_percent":0.1844090162,"percent_accept":0.101},"TX":{"average_dti":19.1,"average_loan":15081.0,"normalized_percent":0.3827242765,"percent_accept":0.119},"UT":{"average_dti":18.9,"average_loan":16202.0,"normalized_percent":0.508757811,"percent_accept":0.131},"VA":{"average_dti":20.6,"average_loan":14545.0,"normalized_percent":0.5295240149,"percent_accept":0.133},"VT":{"average_dti":18.5,"average_loan":15500.0,"normalized_percent":0.5429409662,"percent_accept":0.134},"WA":{"average_dti":19.4,"average_loan":14593.0,"normalized_percent":0.6970951463,"percent_accept":0.148},"WI":{"average_dti":19.5,"average_loan":15134.0,"normalized_percent":0.5049246858,"percent_accept":0.131},"WV":{"average_dti":20.9,"average_loan":15157.0,"normalized_percent":0.2633098036,"percent_accept":0.108},"WY":{"average_dti":20.4,"average_loan":15416.0,"normalized_percent":0.6058814134,"percent_accept":0.14}};
+  d3.keys(sampleData).forEach(function(key) {
+    d = sampleData[key];
+    d["color"] = d3.interpolate("#c1fec2", "#0a5600")(d.normalized_percent); 
+  });
+    
+  console.log(sampleData);
+    /* draw states on id #statesvg */   
+    uStates.draw("#statesvg", sampleData, tooltipHtml);
+    
+    d3.select(self.frameElement).style("height", "600px"); 
+//      console.log(sampleData)
+</script>
+{% endblock js %}

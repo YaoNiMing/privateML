@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>D3 Map Example</title>
+  <meta charset="utf-8">
+  <style>
+
+  path {
+    fill: none;
+    stroke: #000;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+
+  .land {
+    fill: #ddd;
+  }
+
+  .border {
+    fill: none;
+    stroke: #fff;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+
+  </style>
+</head>
+<body>
+
+
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <script src="https://d3js.org/d3-selection-multi.v1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/queue-async/1.0.7/queue.min.js"></script>
+  <script src="http://d3js.org/topojson.v1.min.js"></script>
+
+  <script type="text/javascript">
+    // Your JS Code
+    // Data Source: http://factfinder.census.gov - Total Population
+    // Based on: https://bost.ocks.org/mike/bubble-map/
+
+      queue()
+          .defer(d3.json, "us.json")
+          .defer(d3.csv, "population_us_counties.csv")
+          .await(ready);
+
+      function ready(error, us, population) {
+        if (error) return console.error(error);
+
+        // Inspect Data
+        console.log(population);
+        console.log(us);
+
+        // Convert numbers from Strings
+        console.log(topojson.feature(us, us.objects.counties).features);
+
+        // Create an SVG
+        var width = 960,
+            height = 600;
+
+        var chart = d3.select("body")
+                      .append("svg")
+                      .attrs({
+                        width: width,
+                        height: height
+                      });
+
+        // Add the Map
+
+        var path = d3.geoPath()
+                        .projection(null);
+
+        chart.append("path")
+            .datum(topojson.feature(us, us.objects.nation))
+            .attr("class", "land")
+            .attr("d", path);
+
+        chart
+          .append("path")
+            .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))
+            .attr("class", "border border--state")
+            .attr("d", path);
+
+
+        // chart.append("g")
+        //     .attr("class", "bubble")
+        //   .selectAll("circle")
+        //     .data(topojson.feature(us, us.objects.counties).features)
+        //   .enter().append("circle")
+        //     .attr("transform", function(d) { return "translate(" + path.centroid(d) + ")"; })
+        //     .attr("r", 1.5);
+
+
+        chart.append("g")
+            .attr("class", "bubble")
+          .selectAll(".counties")
+            .data(topojson.feature(us, us.objects.counties).features)
+          .enter().append("path")
+            .attr("d", path);
+
+      };
+  </script>
+</body>
+</html>

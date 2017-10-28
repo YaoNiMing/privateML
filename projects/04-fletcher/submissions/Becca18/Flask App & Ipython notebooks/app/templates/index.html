@@ -1,0 +1,44 @@
+
+{% extends 'base.html' %}
+
+{% block body %}
+  <section class="header">
+    <h2 class="title">Rating Prediction</h2>
+  </section>
+  <hr />
+
+  <div class="content">
+    <form method="POST">
+      {{ form.hidden_tag() }}
+      <div style = font-size:20px; font-weight:bold; margin-left:150px;>
+               {{ form.review_text.label }}<br>
+               {{ form.review_text }}
+               <br>
+      </div>
+      <div class="row">
+        <button type="submit" class="button-primary">Submit</button>
+      </div>
+    </form>
+    {% if prediction %}
+      <div class="row">
+        <div class="six columns">
+          <h2>This is a {{ prediction }} review!</h2>
+          <img src="{{url_for('static', filename='images/' + prediction + '.png')}}"
+              height="300">
+          <!-- /> -->
+        <!-- </div> -->
+        <!-- <div class="six columns"> -->
+         <!--  Your Chart or any other form of visualizations -->
+         <!-- <div id="chart"></div> -->
+       </div>
+      </div>
+    {% endif %}
+  </div>
+{% endblock body %}
+
+{% block js %}
+  <!-- <script type="text/javascript"> -->
+  <!-- // your JS Code -->
+  <!-- // Your D3 code could be here -->
+  <!-- // </script> -->
+{% endblock js %}

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>D3 Map Example</title>
+  <meta charset="utf-8">
+</head>
+<body>
+
+
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/queue-async/1.0.7/queue.min.js"></script>
+  <script src="http://d3js.org/topojson.v1.min.js"></script>
+
+  <script type="text/javascript">
+    // Your JS Code
+      queue()
+          .defer(d3.json, "us.json")
+          .defer(d3.tsv, "<your file>.tsv")  // for csv use .csv
+          .await(ready);
+
+      function ready(error, us, data) {
+
+        // Create an SVG
+
+
+        // Add the Map
+
+      };
+  </script>
+</body>
+</html>

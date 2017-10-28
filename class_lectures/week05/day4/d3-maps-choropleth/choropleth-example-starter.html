@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+
+    <style type="text/css">
+      /*css to go here*/
+
+      .land {
+        fill: #ddd;
+      }
+
+      .states {
+        fill: none;
+        stroke: #fff;
+        stroke-linejoin: round;
+      }
+
+    </style>
+  </head>
+  <body>
+
+
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://d3js.org/d3-selection-multi.v1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/queue-async/1.0.7/queue.min.js"></script>
+    <script src="http://d3js.org/topojson.v1.min.js"></script>
+    <script>
+      //JS to go here
+      // https://gist.github.com/mbostock/3306362
+
+      queue()
+          .defer(d3.json, "us.json")
+          .defer(d3.tsv, "unemployment.tsv")
+          .await(ready);
+
+      var width = 960;
+      var height = 500;
+
+      function ready(error, us, unemployment) {
+        if (error) return console.warn(error);
+
+        console.log(us);
+        // console.log(topojson.feature(us, us.objects.counties).features);
+
+        var rateById = {};
+        unemployment.forEach(function(d) { rateById[d.id] = +d.rate; });
+        // console.log(rateById);
+        // console.log(unemployment);
+
+        // var color = d3.scaleThreshold()
+        //     .domain([0.02, 0.04, 0.06, 0.08, 0.10])
+        //     .range(["#f2f0f7", "#dadaeb", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]);
+
+        var svg = d3.select("body")
+                    .append("svg")
+                    .attrs({
+                      width: width,
+                      height: height
+                    });
+
+      // D3 Projections
+      // https://github.com/d3/d3-geo/blob/master/README.md#geoMercator
+      var projection = d3.geoAlbersUsa()
+          .scale(960)
+          .translate([width / 2, height / 2]);
+
+        var path = d3.geoPath()
+                    .projection(projection);
+
+        svg.append("path")
+            .datum(topojson.feature(us, us.objects.nation))
+            .attr("class", "land")
+            .attr("d", path);
+
+        // svg.append("g")
+        //   .attr("class", "counties")
+        //   .selectAll("path")
+        //   .data(topojson.feature(us, us.objects.counties).features)
+        // .enter()
+        //   .append("path")
+        //   .attr("d", path)
+        //   .style("fill", function(d) { return color(rateById[d.id])});
+
+
+        // svg.append("path")
+        //     .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a.id !== b.id; }))
+        //     .attr("class", "states")
+        //     .attr("d", path);
+      }
+    </script>
+  </body>
+</html>
